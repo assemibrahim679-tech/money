@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="description" content="Smart Money AI — مديرك المالي الشخصي الذكي باللغة العربية المصرية." />
+  <title>Smart Money AI — مديرك المالي الشخصي الذكي</title>
+  
+  <!-- خط القاهرة الاحترافي من جوجل -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * { font-family: 'Cairo', sans-serif; }
+    
+    /* أنيميشن وتأثيرات FinTech احترافية */
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-page {
+      animation: fadeInSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    html:not(.dark) .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.6); }
+
+    /* تحسينات v2: عمق بصري، حالات تركيز، واستجابة أفضل للموبايل */
+    body {
+      background-image: radial-gradient(circle at 85% -10%, rgba(16,185,129,.12), transparent 34rem), radial-gradient(circle at 5% 40%, rgba(20,184,166,.07), transparent 28rem);
+    }
+    button, input, select { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #34d399; outline-offset: 3px; }
+    .glass-card { transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
+    .glass-card:hover { border-color: rgba(52,211,153,.22); }
+    .app-sidebar { transition: transform .28s cubic-bezier(.16,1,.3,1); }
+    .sidebar-backdrop { opacity: 0; pointer-events: none; transition: opacity .24s ease; }
+    .sidebar-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    .app-sidebar.is-open { transform: translateX(0); }
+    .stat-value { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+    @media (max-width: 1023px) {
+      .app-sidebar { position: fixed; inset-block: 0; inset-inline-end: 0; width: min(86vw, 19rem); transform: translateX(105%); overflow-y: auto; }
+      .app-sidebar nav { flex-direction: column; overflow: visible; }
+      .app-sidebar .mobile-sidebar-close { display: inline-flex; }
+    }
+    @media (min-width: 1024px) { .mobile-sidebar-close, #mobile-menu-btn, #sidebar-backdrop { display: none; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300 selection:bg-emerald-500 selection:text-white overflow-x-hidden">
+
+  <!-- إشعار Toast عائم -->
+  <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2"></div>
+
+  <!-- ================= 1. الصفحة الترحيبية LANDING PAGE ================= -->
+  <div id="landing-view" class="min-h-screen flex flex-col justify-between relative overflow-hidden">
+    <!-- خلفية مضيئة -->
+    <div class="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/2 -left-40 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Navbar -->
+    <nav class="max-w-7xl w-full mx-auto px-6 py-6 flex items-center justify-between z-10">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+          <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <span class="text-xl font-black tracking-tight block leading-none">Smart Money <span class="text-emerald-500">AI</span></span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">مديرك المالي الشخصي الذكي</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass-card hover:border-emerald-500/40 transition" title="تغيير المظهر">
+          <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-amber-400"></i>
+          <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-700"></i>
+        </button>
+        <button onclick="enterApp()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-emerald-500/20">
+          دخول لوحة التحكم
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="max-w-7xl mx-auto px-6 py-12 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center z-10">
+      <div class="lg:col-span-7 space-y-6 animate-page">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 dark:text-emerald-400 text-xs font-bold">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>الجيل الجديد من الإدارة المالية بالذكاء الاصطناعي المصري</span>
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-black leading-tight">
+          فلوسك تحت السيطرة، <br />
+          <span class="bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">ومستقبلك المالي أوضح.</span>
+        </h1>
+        <p class="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
+          منصة مالية ذكية تحسب لك الصافي الحر للإنفاق بعد تجنيب الفواتير والادخار، وتفهم رسائلك بالعامية المصرية مثل: <span class="text-emerald-500 font-bold">«صرفت 150 جنيه على الغداء»</span> أو <span class="text-emerald-500 font-bold">«هل أقدر أشتري موبايل بـ 8000 جنيه؟»</span>.
+        </p>
+        <div class="flex flex-wrap gap-4 pt-2">
+          <button onclick="enterApp()" class="px-8 py-4 rounded-2xl bg-gradient-to-l from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-base shadow-xl shadow-emerald-500/25 flex items-center gap-2 transition transform hover:-translate-y-0.5">
+            <span>ابدأ الآن مجانًا</span>
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          </button>
+          <button onclick="openOnboardingModal()" class="px-6 py-4 rounded-2xl glass-card hover:border-emerald-500/40 font-bold text-sm flex items-center gap-2 transition">
+            <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
+            <span>تخصيص الدخل والميزانية (Onboarding)</span>
+          </button>
+        </div>
+
+        <!-- مميزات سريعة -->
+        <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200 dark:border-slate-800/80">
+          <div>
+            <div class="text-2xl font-black text-emerald-500">100%</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">دعم عربي و RTL حقيقي</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-emerald-500">EGP ج.م</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">محرك حسابات دقيق بدون أخطاء</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-emerald-500">AI ذكي</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">يفهم العامية المصرية والفصحى</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- معاينة حية مصغرة في الـ Hero -->
+      <div class="lg:col-span-5 animate-page">
+        <div class="glass-card rounded-3xl p-6 space-y-5 border border-emerald-500/20 shadow-2xl relative">
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span class="font-bold text-sm">معاينة حية — حساب 30,000 ج.م</span>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-bold">نشط الآن</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/90">
+              <span class="text-xs text-slate-400">الرصيد النقدي الفعلي</span>
+              <div class="text-xl font-black mt-1 text-emerald-500">19,700 ج.م</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/90">
+              <span class="text-xs text-slate-400">المتاح للإنفاق الآمن</span>
+              <div class="text-xl font-black mt-1 text-teal-400">10,000 ج.م</div>
+            </div>
+          </div>
+          <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-2">
+            <div class="font-bold text-emerald-400 flex items-center gap-1.5">
+              <i data-lucide="bot" class="w-4 h-4"></i>
+              <span>المساعد الذكي AI:</span>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+              «بناءً على دخلك (30,000 ج.م) ومصروفاتك المسجلة (10,300 ج.م) والفواتير القادمة (1,700 ج.م) وهدف ادخارك (8,000 ج.م)، مصروفك اليومي الآمن هو <strong>500 ج.م/يوم</strong>.»
+            </p>
+          </div>
+          <button onclick="enterApp()" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold text-sm hover:opacity-90 transition">
+            افتح النظام الكامل الآن
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="max-w-7xl w-full mx-auto px-6 py-6 border-t border-slate-200 dark:border-slate-900 text-xs text-slate-500 flex flex-wrap justify-between items-center gap-4">
+      <span>© 2026 Smart Money AI — جميع الحقوق محفوظة.</span>
+      <span>يعمل محليًا بالكامل مع حفظ تلقائي للبيانات (LocalStorage Database + Gemini API Ready)</span>
+    </footer>
+  </div>
+
+  <!-- ================= 2. التطبيق الرئيسي FULL APPLICATION SHELL ================= -->
+  <div id="app-view" class="hidden min-h-screen flex flex-col lg:flex-row">
+    <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="sidebar-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-20"></div>
+    
+    <!-- القائمة الجانبية Sidebar -->
+    <aside id="app-sidebar" class="app-sidebar w-full lg:w-72 glass-card border-b lg:border-b-0 lg:border-l border-slate-200 dark:border-slate-800/80 flex flex-col justify-between shrink-0 z-30">
+      <div>
+        <!-- الشعار -->
+        <div class="p-6 flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80">
+          <div class="flex items-center gap-3 cursor-pointer" onclick="showLanding()">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
+              <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <div class="font-black text-base leading-none">Smart Money <span class="text-emerald-500">AI</span></div>
+              <div class="text-[11px] text-slate-400 mt-1">مديرك المالي الذكي</div>
+            </div>
+          </div>
+          <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-200/70 dark:bg-slate-800/80 hover:text-emerald-400 transition">
+            <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+          </button>
+          <button onclick="toggleSidebar(false)" class="mobile-sidebar-close hidden p-2 rounded-xl bg-slate-200/70 dark:bg-slate-800/80 hover:text-rose-400 transition" aria-label="إغلاق القائمة">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- أزرار التنقل بين الصفحات -->
+        <nav class="p-3 flex lg:flex-col gap-1.5 overflow-x-auto">
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition whitespace-nowrap bg-emerald-500 text-slate-950">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>لوحة التحكم</span>
+          </button>
+          <button onclick="switchTab('assistant')" id="nav-assistant" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap">
+            <i data-lucide="bot" class="w-4 h-4 text-emerald-500"></i>
+            <span>المساعد الذكي AI</span>
+            <span class="mr-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">مصري</span>
+          </button>
+          <button onclick="switchTab('transactions')" id="nav-transactions" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap">
+            <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+            <span>إدارة المعاملات</span>
+          </button>
+          <button onclick="switchTab('budgets')" id="nav-budgets" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap">
+            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+            <span>نظام الميزانيات</span>
+          </button>
+          <button onclick="switchTab('goals')" id="nav-goals" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap">
+            <i data-lucide="target" class="w-4 h-4"></i>
+            <span>أهداف الادخار</span>
+          </button>
+          <button onclick="switchTab('bills')" id="nav-bills" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap">
+            <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+            <span>الفواتير والالتزامات</span>
+          </button>
+          <button onclick="switchTab('insights')" id="nav-insights" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i>
+            <span>التحليلات والتقارير</span>
+          </button>
+          <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            <span>الإعدادات و API</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- ملخص سريع للمستخدم أسفل القائمة -->
+      <div class="hidden lg:block p-4 m-4 rounded-2xl bg-slate-200/70 dark:bg-slate-900/90 border border-slate-300/60 dark:border-slate-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <span id="sidebar-username" class="font-bold text-sm">عاصم إبراهيم</span>
+          <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">حساب نشط</span>
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400">المصروف اليومي الآمن:</div>
+        <div id="sidebar-safe-daily" class="text-lg font-black text-emerald-500">500 ج.م / يوم</div>
+        <button onclick="openTxModal()" class="w-full mt-2 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>تسجيل معاملة سريعة</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي Main Area -->
+    <div class="flex-1 flex flex-col min-w-0">
+      
+      <!-- الشريط العلوي Topbar -->
+      <header class="glass-card border-b border-slate-200 dark:border-slate-800/80 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-20">
+        <button id="mobile-menu-btn" onclick="toggleSidebar(true)" class="lg:hidden p-2.5 rounded-xl bg-slate-200/70 dark:bg-slate-800/80 text-emerald-400" aria-label="فتح القائمة">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <div>
+          <h2 id="page-title" class="text-xl font-extrabold">لوحة التحكم المالية الشاملة</h2>
+          <p id="page-subtitle" class="text-xs text-slate-500 dark:text-slate-400">متابعة لحظية للدخل والمصروفات والالتزامات بالعملة المحلية (ج.م)</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="openTxModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>إضافة معاملة</span>
+          </button>
+          <button onclick="switchTab('assistant')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:border-emerald-500/40 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition">
+            <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+            <span>اسأل المساعد الذكي</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- حاوية التبويبات -->
+      <main class="p-6 max-w-7xl w-full mx-auto space-y-6 flex-1">
+
+        <!-- 1. تبويب لوحة التحكم DASHBOARD -->
+        <section id="tab-dashboard" class="tab-pane space-y-6 animate-page">
+          <!-- البطاقات الـ 6 الرئيسية -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="glass-card p-5 rounded-2xl border-r-4 border-r-emerald-500">
+              <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                <span>إجمالي الدخل الشهري</span>
+                <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+              </div>
+              <div id="kpi-income" class="text-2xl font-black">30,000 ج.م</div>
+              <div class="text-[11px] text-slate-400 mt-1">الدخل الأساسي + الإيرادات المسجلة</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl border-r-4 border-r-rose-500">
+              <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                <span>إجمالي المصروفات المسجلة</span>
+                <i data-lucide="trending-down" class="w-4 h-4 text-rose-400"></i>
+              </div>
+              <div id="kpi-expenses" class="text-2xl font-black text-rose-400">10,300 ج.م</div>
+              <div id="kpi-today-week" class="text-[11px] text-slate-400 mt-1">اليوم: 350 ج.م | هذا الأسبوع: 4,300 ج.م</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl border-r-4 border-r-cyan-500">
+              <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                <span>الرصيد النقدي الفعلي الآن</span>
+                <i data-lucide="wallet" class="w-4 h-4 text-cyan-400"></i>
+              </div>
+              <div id="kpi-cash" class="text-2xl font-black text-cyan-400">19,700 ج.م</div>
+              <div class="text-[11px] text-slate-400 mt-1">السيولة النقدية قبل خصم الفواتير غير المدفوعة</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl border-r-4 border-r-amber-500">
+              <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                <span>التزامات وفواتير قادمة (غير مدفوعة)</span>
+                <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-400"></i>
+              </div>
+              <div id="kpi-bills" class="text-2xl font-black text-amber-400">1,700 ج.م</div>
+              <div class="text-[11px] text-slate-400 mt-1">محجوزة حسابيًا لحين سدادها الفعلي</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl border-r-4 border-r-purple-500">
+              <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
+                <span>الادخار الشهري المستهدف</span>
+                <i data-lucide="piggy-bank" class="w-4 h-4 text-purple-400"></i>
+              </div>
+              <div id="kpi-savings" class="text-2xl font-black text-purple-400">8,000 ج.م</div>
+              <div id="kpi-goals-total" class="text-[11px] text-slate-400 mt-1">إجمالي المدخر في الأهداف: 61,000 ج.م</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/40">
+              <div class="flex justify-between items-center text-xs text-emerald-400 font-bold mb-1">
+                <span>الصافي الحر المتاح للإنفاق الآمن</span>
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+              </div>
+              <div id="kpi-disposable" class="text-2xl font-black text-emerald-400">10,000 ج.م</div>
+              <div id="kpi-safe-daily" class="text-[11px] text-emerald-300 mt-1">الحد اليومي الآمن: 500 ج.م/يوم</div>
+            </div>
+          </div>
+
+          <!-- الرسوم البيانية -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 glass-card p-6 rounded-2xl">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-base">المصروفات حسب الفئات (ج.م)</h3>
+                <span id="top-category-badge" class="text-xs px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 font-bold">الأعلى: السكن</span>
+              </div>
+              <div class="h-64">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 glass-card p-6 rounded-2xl flex flex-col justify-between">
+              <div>
+                <h3 class="font-bold text-base mb-4">توزيع السيولة الشهرية</h3>
+                <div class="h-56">
+                  <canvas id="cashflowChart"></canvas>
+                </div>
+              </div>
+              <div class="mt-4 p-3.5 rounded-xl bg-slate-200/50 dark:bg-slate-900/90 text-xs flex items-center justify-between">
+                <span>الرصيد المتوقع بنهاية الشهر:</span>
+                <strong id="projected-balance" class="text-emerald-400 text-sm">12,850 ج.م</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- آخر المعاملات + اقتراحات الذكاء الاصطناعي -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 glass-card p-6 rounded-2xl">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-base">آخر المعاملات المسجلة</h3>
+                <button onclick="switchTab('transactions')" class="text-xs text-emerald-400 hover:underline">عرض الكل</button>
+              </div>
+              <div id="dashboard-recent-tx" class="space-y-3"></div>
+            </div>
+
+            <div class="lg:col-span-5 glass-card p-6 rounded-2xl space-y-4">
+              <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <h3>توصيات المدير المالي الذكي</h3>
+              </div>
+              <div id="dashboard-ai-tips" class="space-y-3 text-xs leading-relaxed"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. تبويب المساعد المالي الذكي AI ASSISTANT -->
+        <section id="tab-assistant" class="tab-pane hidden animate-page">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 glass-card rounded-2xl flex flex-col h-[640px] overflow-hidden">
+              <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-100/60 dark:bg-slate-900/60">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <i data-lucide="bot" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">المساعد المالي الذكي (Smart Money AI)</div>
+                    <div id="ai-mode-indicator" class="text-[11px] text-emerald-400">محرك الفهم المصري النشط — لا يحفظ أي عملية إلا بموافقتك</div>
+                  </div>
+                </div>
+                <button onclick="clearChat()" class="text-xs text-slate-400 hover:text-rose-400 transition">مسح المحادثة</button>
+              </div>
+
+              <!-- رسائل الشات -->
+              <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4"></div>
+
+              <!-- بطاقة تأكيد العملية قبل الحفظ -->
+              <div id="chat-confirmation-box" class="hidden mx-5 mb-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 space-y-3">
+                <div class="flex items-center justify-between text-amber-400 text-xs font-bold">
+                  <span>تأكيد تسجيل المعاملة المستخرجة</span>
+                  <span>بانتظار موافقتك</span>
+                </div>
+                <div id="chat-proposed-details" class="text-xs space-y-1"></div>
+                <div class="flex gap-2 pt-1">
+                  <button onclick="confirmChatTransaction()" class="flex-1 py-2 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    <span>تأكيد وحفظ في الحسابات</span>
+                  </button>
+                  <button onclick="cancelChatTransaction()" class="py-2 px-4 rounded-xl bg-slate-800 text-slate-300 text-xs">إلغاء</button>
+                </div>
+              </div>
+
+              <!-- أزرار سريعة -->
+              <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800/80 flex gap-2 overflow-x-auto">
+                <button onclick="sendQuickPrompt('صرفت 150 جنيه على الغداء')" class="px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800 hover:bg-emerald-500/20 text-xs whitespace-nowrap transition">صرفت 150 جنيه على الغداء</button>
+                <button onclick="sendQuickPrompt('دفعت 500 جنيه مواصلات')" class="px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800 hover:bg-emerald-500/20 text-xs whitespace-nowrap transition">دفعت 500 جنيه مواصلات</button>
+                <button onclick="sendQuickPrompt('هل أقدر أشتري موبايل بـ 8000 جنيه؟')" class="px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800 hover:bg-emerald-500/20 text-xs whitespace-nowrap transition">هل أقدر أشتري موبايل بـ 8000 جنيه؟</button>
+                <button onclick="sendQuickPrompt('فاضل معايا كام؟')" class="px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800 hover:bg-emerald-500/20 text-xs whitespace-nowrap transition">فاضل معايا كام؟</button>
+                <button onclick="sendQuickPrompt('أكثر حاجة بتسحب فلوسي إيه؟')" class="px-3 py-1.5 rounded-full bg-slate-200 dark:bg-slate-800 hover:bg-emerald-500/20 text-xs whitespace-nowrap transition">أكثر حاجة بتسحب فلوسي إيه؟</button>
+              </div>
+
+              <!-- حقل الإدخال -->
+              <form onsubmit="handleChatForm(event)" class="p-3 border-t border-slate-200 dark:border-slate-800 flex gap-2">
+                <input id="chat-input" type="text" placeholder="اكتب بالعامية المصرية أو الفصحى: صرفت 250 جنيه عشاء، أو قبضت 5000 جنيه مكافأة..." class="flex-1 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" />
+                <button type="submit" class="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm flex items-center gap-1.5">
+                  <span>إرسال</span>
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+              </form>
+            </div>
+
+            <!-- حاسبة القدرة على الشراء المباشرة -->
+            <div class="lg:col-span-4 glass-card p-6 rounded-2xl space-y-5">
+              <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <h3>محاكي قرارات الشراء الذكي</h3>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                اختبر تأثير شراء أي منتج على ميزانيتك، التزاماتك القادمة، ومصروفك اليومي الآمن قبل أن تدفع.
+              </p>
+              <div class="space-y-3">
+                <div>
+                  <label class="text-xs text-slate-400 block mb-1">اسم المنتج أو الخدمة</label>
+                  <input id="sim-item-name" type="text" value="موبايل جديد" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label class="text-xs text-slate-400 block mb-1">السعر بالجنيه المصري (ج.م)</label>
+                  <input id="sim-item-price" type="number" value="8000" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm" />
+                </div>
+                <button onclick="runPurchaseSimulator()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition">
+                  تحليل القدرة على الشراء الآن
+                </button>
+              </div>
+              <div id="sim-result-box" class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 text-xs leading-relaxed space-y-2"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. تبويب إدارة المعاملات TRANSACTIONS -->
+        <section id="tab-transactions" class="tab-pane hidden space-y-6 animate-page">
+          <div class="glass-card p-5 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3 flex-1">
+              <input id="tx-search" oninput="renderTransactionsTable()" type="text" placeholder="ابحث في الوصف أو الملاحظات..." class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2 text-sm flex-1 min-w-[200px]" />
+              <select id="tx-filter-type" onchange="renderTransactionsTable()" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-sm">
+                <option value="all">جميع العمليات (دخل ومصروف)</option>
+                <option value="expense">المصروفات فقط</option>
+                <option value="income">الدخل فقط</option>
+              </select>
+            </div>
+            <button onclick="openTxModal()" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>معاملة جديدة</span>
+            </button>
+          </div>
+
+          <div class="glass-card rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-right text-sm">
+                <thead class="bg-slate-200/60 dark:bg-slate-900/90 text-xs text-slate-500 dark:text-slate-400">
+                  <tr>
+                    <th class="p-4">التاريخ</th>
+                    <th class="p-4">الوصف</th>
+                    <th class="p-4">التصنيف</th>
+                    <th class="p-4">طريقة الدفع</th>
+                    <th class="p-4">المبلغ</th>
+                    <th class="p-4 text-center">إجراء</th>
+                  </tr>
+                </thead>
+                <tbody id="tx-table-body" class="divide-y divide-slate-200 dark:divide-slate-800/70"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. تبويب نظام الميزانيات BUDGETS -->
+        <section id="tab-budgets" class="tab-pane hidden space-y-6 animate-page">
+          <div class="glass-card p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-lg">مراقبة الميزانيات الشهرية حسب الفئة</h3>
+              <p class="text-xs text-slate-400">تنبيهات تلقائية عند استهلاك 70% و 90% و 100% من مخصص كل فئة</p>
+            </div>
+            <button onclick="promptUpdateBudget()" class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">
+              تعديل حدود الميزانية
+            </button>
+          </div>
+          <div id="budgets-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- 5. تبويب أهداف الادخار GOALS -->
+        <section id="tab-goals" class="tab-pane hidden space-y-6 animate-page">
+          <div class="glass-card p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-lg">أهدافك المالية والادخارية</h3>
+              <p class="text-xs text-slate-400">تابع تقدمك نحو شراء لابتوب، هاتف، سيارة، أو بناء صندوق الطوارئ</p>
+            </div>
+            <button onclick="openGoalModal()" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>هدف ادخار جديد</span>
+            </button>
+          </div>
+          <div id="goals-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+        <!-- 6. تبويب الفواتير والالتزامات BILLS -->
+        <section id="tab-bills" class="tab-pane hidden space-y-6 animate-page">
+          <div class="glass-card p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-lg">الفواتير والالتزامات الشهرية المتكررة</h3>
+              <p class="text-xs text-slate-400">الفواتير غير المدفوعة تُحجز من الرصيد الحر ولا تُخصم من الرصيد النقدي الفعلي إلا عند الضغط على «سداد الآن»</p>
+            </div>
+            <button onclick="addNewBillPrompt()" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">
+              + إضافة التزام أو فاتورة
+            </button>
+          </div>
+          <div id="bills-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- 7. تبويب التحليلات والتقارير INSIGHTS & REPORTS -->
+        <section id="tab-insights" class="tab-pane hidden space-y-6 animate-page">
+          <div class="glass-card p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-lg">التحليل المالي الذكي وتصدير التقارير</h3>
+              <p class="text-xs text-slate-400">فصل واضح بين الحقائق الحسابية المؤكدة والتوقعات التقديرية مع إمكانية التصدير</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="exportCSV()" class="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>تصدير CSV (Excel)</span>
+              </button>
+              <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>طباعة / حفظ PDF</span>
+              </button>
+            </div>
+          </div>
+          <div id="insights-cards" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+        <!-- 8. تبويب الإعدادات وربط Gemini API -->
+        <section id="tab-settings" class="tab-pane hidden space-y-6 animate-page">
+          <div class="glass-card p-6 rounded-2xl max-w-2xl space-y-5">
+            <h3 class="font-bold text-lg border-b border-slate-800 pb-3">إعدادات الحساب والملف المالي</h3>
+            <div id="api-status" class="flex items-center gap-2 p-3 rounded-xl bg-slate-100 dark:bg-slate-900/80 text-xs text-slate-500 dark:text-slate-400">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span><span>جاري فحص اتصال الـ API...</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">اسم المستخدم</label>
+                <input id="set-name" type="text" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">الدخل الشهري الأساسي (ج.م)</label>
+                <input id="set-income" type="number" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">الادخار الشهري المستهدف (ج.م)</label>
+                <input id="set-savings" type="number" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">مفتاح Gemini API (اختياري للاتصال السحابي المباشر)</label>
+                <input id="set-gemini-key" type="password" placeholder="AIzaSy..." class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-3 pt-2">
+              <button onclick="saveSettings()" class="px-6 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">حفظ التعديلات</button>
+              <button onclick="resetDemoData()" class="px-5 py-2.5 rounded-xl bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-bold text-sm">إعادة ضبط البيانات الافتراضية</button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ================= نافذة إضافة معاملة MODAL ================= -->
+  <div id="tx-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md rounded-3xl p-6 space-y-4 border border-slate-700 animate-page">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base">تسجيل معاملة مالية جديدة</h3>
+        <button onclick="closeTxModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="submitNewTransaction(event)" class="space-y-3 text-sm">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">نوع العملية</label>
+            <select id="modal-tx-type" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+              <option value="expense">مصروف (-)</option>
+              <option value="income">دخل إضافي (+)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">المبلغ (ج.م)</label>
+            <input id="modal-tx-amount" type="number" step="0.01" required placeholder="250" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">التصنيف</label>
+            <select id="modal-tx-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+              <option value="الطعام والشراب">الطعام والشراب</option>
+              <option value="المواصلات">المواصلات</option>
+              <option value="السكن">السكن</option>
+              <option value="الفواتير">الفواتير</option>
+              <option value="التسوق">التسوق</option>
+              <option value="الصحة">الصحة</option>
+              <option value="الترفيه">الترفيه</option>
+              <option value="الاشتراكات">الاشتراكات</option>
+              <option value="الراتب والدخل">الراتب والدخل</option>
+              <option value="أخرى">أخرى</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">طريقة الدفع</label>
+            <select id="modal-tx-method" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white">
+              <option value="نقدًا">نقدًا</option>
+              <option value="بطاقة بنكية">بطاقة بنكية</option>
+              <option value="محفظة إلكترونية">محفظة إلكترونية</option>
+              <option value="تحويل بنكي">تحويل بنكي</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">الوصف</label>
+          <input id="modal-tx-desc" type="text" required placeholder="مثال: وجبة غداء أو مشتريات السوبرماركت" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">التاريخ</label>
+          <input id="modal-tx-date" type="date" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white" />
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">حفظ المعاملة</button>
+          <button type="button" onclick="closeTxModal()" class="px-5 py-3 rounded-xl bg-slate-800 text-slate-300">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= المحرك البرمجي الكامل JAVASCRIPT ENGINE ================= -->
+  <script>
+    const STORAGE_KEY = 'smart_money_ai_state_v1';
+    const API_BASE = '/api';
+
+    const DEFAULT_STATE = {
+      profile: {
+        name: 'عاصم إبراهيم',
+        baseIncome: 30000,
+        targetSavings: 8000,
+        geminiKey: ''
+      },
+      transactions: [
+        { id: 1, type: 'expense', amount: 6000, category: 'السكن', method: 'تحويل بنكي', desc: 'إيجار الشقة الشهري', date: new Date().toISOString().slice(0, 8) + '01' },
+        { id: 2, type: 'expense', amount: 2450, category: 'الطعام والشراب', method: 'بطاقة بنكية', desc: 'خضار ومشتريات السوبرماركت', date: new Date(Date.now() - 86400000 * 3).toISOString().slice(0, 10) },
+        { id: 3, type: 'expense', amount: 850, category: 'المواصلات', method: 'نقدًا', desc: 'تموين بنزين ومواصلات أوبر', date: new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10) },
+        { id: 4, type: 'expense', amount: 650, category: 'الفواتير', method: 'محفظة إلكترونية', desc: 'فاتورة الإنترنت المنزلي والموبايل', date: new Date(Date.now() - 86400000).toISOString().slice(0, 10) },
+        { id: 5, type: 'expense', amount: 350, category: 'الطعام والشراب', method: 'نقدًا', desc: 'غداء وقهوة اليوم', date: new Date().toISOString().slice(0, 10) }
+      ],
+      budgets: {
+        'السكن': 6500,
+        'الطعام والشراب': 4500,
+        'المواصلات': 2000,
+        'الفواتير': 1800,
+        'التسوق': 2500,
+        'الترفيه': 1500
+      },
+      bills: [
+        { id: 101, title: 'فاتورة الكهرباء الشهرية', category: 'الفواتير', amount: 950, dueDate: 'يوم 5 القادم', isPaid: false },
+        { id: 102, title: 'اشتراك الجيم والنادي', category: 'الاشتراكات', amount: 750, dueDate: 'يوم 10 القادم', isPaid: false }
+      ],
+      goals: [
+        { id: 201, title: 'صندوق الطوارئ الشخصي', target: 90000, current: 36000, deadline: '2027-06-01' },
+        { id: 202, title: 'شراء لابتوب MacBook Pro', target: 65000, current: 25000, deadline: '2027-03-15' }
+      ],
+      chatHistory: [
+        {
+          role: 'assistant',
+          text: 'أهلاً بك يا عاصم في Smart Money AI! أنا مديرك المالي الذكي. يمكنك تسجيل مصروفاتك بالعامية المصرية (مثل: «صرفت 150 جنيه على الغداء») أو سؤالي («فاضل معايا كام؟» أو «هل أقدر أشتري موبايل بـ 8000 جنيه؟»).'
+        }
+      ]
+    };
+
+    let state = loadState();
+    let pendingChatTx = null;
+    let catChartInstance = null;
+    let flowChartInstance = null;
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+    }
+
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('smart_money_theme');
+      document.documentElement.classList.toggle('dark', savedTheme !== 'light');
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_STATE));
+      } catch {
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      refreshAllUI();
+    }
+
+    function formatEGP(num) {
+      return Number(num || 0).toLocaleString('ar-EG', { maximumFractionDigits: 2 }) + ' ج.م';
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      el.className = 'px-4 py-3 rounded-2xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-xl flex items-center gap-2 animate-page';
+      const icon = document.createElement('span');
+      icon.textContent = '✓';
+      const message = document.createElement('span');
+      message.textContent = msg;
+      el.append(icon, message);
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3200);
+    }
+
+    // ================= المحرك المالي الدقيق =================
+    function calculateFinancialSummary() {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const weekAgo = new Date(Date.now() - 86400000 * 7).toISOString().slice(0, 10);
+
+      const extraIncome = state.transactions
+        .filter(t => t.type === 'income')
+        .reduce((s, t) => s + Number(t.amount), 0);
+
+      const totalIncome = Number(state.profile.baseIncome) + extraIncome;
+      const expensesList = state.transactions.filter(t => t.type === 'expense');
+      const totalExpenses = expensesList.reduce((s, t) => s + Number(t.amount), 0);
+
+      const spentToday = expensesList
+        .filter(t => t.date === todayStr)
+        .reduce((s, t) => s + Number(t.amount), 0);
+
+      const spentWeek = expensesList
+        .filter(t => t.date >= weekAgo)
+        .reduce((s, t) => s + Number(t.amount), 0);
+
+      const actualCash = totalIncome - totalExpenses;
+      const unpaidBills = state.bills
+        .filter(b => !b.isPaid)
+        .reduce((s, b) => s + Number(b.amount), 0);
+
+      const targetSavings = Number(state.profile.targetSavings);
+      const disposable = Math.max(actualCash - unpaidBills - targetSavings, 0);
+
+      const now = new Date();
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const daysElapsed = Math.max(now.getDate(), 1);
+      const remainingDays = Math.max(daysInMonth - now.getDate(), 1);
+
+      const dailyBurn = totalExpenses / daysElapsed;
+      const safeDaily = disposable / remainingDays;
+      const projectedEnd = Math.max(totalIncome - (totalExpenses + dailyBurn * remainingDays + unpaidBills), 0);
+
+      const byCat = {};
+      expensesList.forEach(t => {
+        byCat[t.category] = (byCat[t.category] || 0) + Number(t.amount);
+      });
+
+      const sortedCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+      const topCategory = sortedCats.length ? sortedCats[0][0] : 'لا يوجد';
+      const totalGoalsSaved = state.goals.reduce((s, g) => s + Number(g.current), 0);
+
+      return {
+        totalIncome,
+        totalExpenses,
+        spentToday,
+        spentWeek,
+        actualCash,
+        unpaidBills,
+        targetSavings,
+        disposable,
+        dailyBurn,
+        safeDaily,
+        projectedEnd,
+        byCat,
+        sortedCats,
+        topCategory,
+        totalGoalsSaved,
+        remainingDays
+      };
+    }
+
+    // ================= تحديث جميع عناصر الواجهة =================
+    function refreshAllUI() {
+      const s = calculateFinancialSummary();
+
+      document.getElementById('sidebar-username').textContent = state.profile.name;
+      document.getElementById('sidebar-safe-daily').textContent = formatEGP(Math.round(s.safeDaily)) + ' / يوم';
+
+      document.getElementById('kpi-income').textContent = formatEGP(s.totalIncome);
+      document.getElementById('kpi-expenses').textContent = formatEGP(s.totalExpenses);
+      document.getElementById('kpi-today-week').textContent = `اليوم: ${formatEGP(s.spentToday)} | آخر 7 أيام: ${formatEGP(s.spentWeek)}`;
+      document.getElementById('kpi-cash').textContent = formatEGP(s.actualCash);
+      document.getElementById('kpi-bills').textContent = formatEGP(s.unpaidBills);
+      document.getElementById('kpi-savings').textContent = formatEGP(s.targetSavings);
+      document.getElementById('kpi-goals-total').textContent = `إجمالي المدخر في الأهداف: ${formatEGP(s.totalGoalsSaved)}`;
+      document.getElementById('kpi-disposable').textContent = formatEGP(s.disposable);
+      document.getElementById('kpi-safe-daily').textContent = `الحد اليومي الآمن (${s.remainingDays} يوم متبقي): ${formatEGP(Math.round(s.safeDaily))}/يوم`;
+      document.getElementById('top-category-badge').textContent = `الأعلى استهلاكًا: ${s.topCategory}`;
+      document.getElementById('projected-balance').textContent = formatEGP(Math.round(s.projectedEnd));
+
+      renderRecentTransactions();
+      renderDashboardTips(s);
+      renderCharts(s);
+      renderTransactionsTable();
+      renderBudgets(s);
+      renderGoals();
+      renderBills();
+      renderInsights(s);
+      renderChatMessages();
+      populateSettingsForm();
+      lucide.createIcons();
+    }
+
+    function renderRecentTransactions() {
+      const box = document.getElementById('dashboard-recent-tx');
+      const recent = [...state.transactions].sort((a, b) => b.id - a.id).slice(0, 5);
+      box.innerHTML = recent.map(t => `
+        <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800">
+          <div>
+          <div class="font-bold text-sm">${escapeHTML(t.desc)}</div>
+            <div class="text-xs text-slate-400 mt-0.5">${escapeHTML(t.category)} • ${escapeHTML(t.method)} • ${escapeHTML(t.date)}</div>
+          </div>
+          <div class="font-extrabold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
+            ${t.type === 'income' ? '+' : '-'}${formatEGP(t.amount)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderDashboardTips(s) {
+      const box = document.getElementById('dashboard-ai-tips');
+      box.innerHTML = `
+        <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+          <strong class="text-emerald-400 block mb-1">1. الصافي الحر للإنفاق:</strong>
+          بعد عزل الفواتير القادمة (${formatEGP(s.unpaidBills)}) وهدف الادخار (${formatEGP(s.targetSavings)})، يمكنك إنفاق <strong>${formatEGP(Math.round(s.safeDaily))} يوميًا</strong> بأمان تام.
+        </div>
+        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+          <strong class="text-amber-400 block mb-1">2. الفئة الأكثر استهلاكًا:</strong>
+          فئة <strong>${s.topCategory}</strong> تتصدر مصروفاتك هذا الشهر. خفض 10% من المصروفات المتغيرة يضيف ${formatEGP(Math.round(s.totalExpenses * 0.1))} لمدخراتك.
+        </div>
+        <div class="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+          <strong class="text-cyan-400 block mb-1">3. توقع نهاية الشهر:</strong>
+          بمعدل صرفك اليومي الحالي (${formatEGP(Math.round(s.dailyBurn))}/يوم)، سيغلق الشهر على فائض نقدي قدره <strong>${formatEGP(Math.round(s.projectedEnd))}</strong>.
+        </div>
+      `;
+    }
+
+    function renderCharts(s) {
+      const ctx1 = document.getElementById('categoryChart');
+      const ctx2 = document.getElementById('cashflowChart');
+      if (!ctx1 || !ctx2) return;
+
+      const labels = s.sortedCats.map(i => i[0]);
+      const values = s.sortedCats.map(i => i[1]);
+
+      if (catChartInstance) catChartInstance.destroy();
+      catChartInstance = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'المصروفات (ج.م)',
+            data: values,
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'],
+            borderRadius: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+          }
+        }
+      });
+
+      if (flowChartInstance) flowChartInstance.destroy();
+      flowChartInstance = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['مصروفات مسجلة', 'فواتير قادمة', 'ادخار مستهدف', 'متاح للإنفاق الحر'],
+          datasets: [{
+            data: [s.totalExpenses, s.unpaidBills, s.targetSavings, s.disposable],
+            backgroundColor: ['#f43f5e', '#f59e0b', '#a855f7', '#10b981'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Cairo', size: 11 } } }
+          }
+        }
+      });
+    }
+
+    function renderTransactionsTable() {
+      const tbody = document.getElementById('tx-table-body');
+      const q = (document.getElementById('tx-search')?.value || '').trim().toLowerCase();
+      const filterType = document.getElementById('tx-filter-type')?.value || 'all';
+
+      const rows = [...state.transactions]
+        .filter(t => filterType === 'all' || t.type === filterType)
+        .filter(t => !q || t.desc.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
+        .sort((a, b) => b.id - a.id);
+
+      tbody.innerHTML = rows.map(t => `
+        <tr class="hover:bg-slate-200/40 dark:hover:bg-slate-900/50 transition">
+          <td class="p-4 text-xs text-slate-400">${t.date}</td>
+          <td class="p-4 font-bold">${escapeHTML(t.desc)}</td>
+          <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs bg-slate-200 dark:bg-slate-800">${escapeHTML(t.category)}</span></td>
+          <td class="p-4 text-xs text-slate-400">${escapeHTML(t.method)}</td>
+          <td class="p-4 font-extrabold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
+            ${t.type === 'income' ? '+' : '-'}${formatEGP(t.amount)}
+          </td>
+          <td class="p-4 text-center">
+            <button onclick="deleteTx(${t.id})" class="text-rose-400 hover:text-rose-300 text-xs font-bold">حذف</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function deleteTx(id) {
+      state.transactions = state.transactions.filter(t => t.id !== id);
+      saveState();
+      showToast('تم حذف المعاملة وتحديث الرصيد');
+    }
+
+    function renderBudgets(s) {
+      const grid = document.getElementById('budgets-grid');
+      grid.innerHTML = Object.entries(state.budgets).map(([cat, limit]) => {
+        const spent = s.byCat[cat] || 0;
+        const pct = Math.min(Math.round((spent / limit) * 100), 100);
+        const rawPct = Math.round((spent / limit) * 100);
+        let barColor = 'bg-emerald-500';
+        let alertBadge = '<span class="text-emerald-400 text-xs">آمن</span>';
+        if (rawPct >= 100) {
+          barColor = 'bg-rose-500';
+          alertBadge = '<span class="text-rose-400 text-xs font-bold">تجاوز 100%!</span>';
+        } else if (rawPct >= 90) {
+          barColor = 'bg-rose-400';
+          alertBadge = '<span class="text-rose-400 text-xs font-bold">تنبيه 90%!</span>';
+        } else if (rawPct >= 70) {
+          barColor = 'bg-amber-400';
+          alertBadge = '<span class="text-amber-400 text-xs font-bold">تنبيه 70%</span>';
+        }
+        return `
+          <div class="glass-card p-5 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-base">${cat}</span>
+              ${alertBadge}
+            </div>
+            <div class="flex justify-between text-xs text-slate-400">
+              <span>المستهلك: <strong class="text-white">${formatEGP(spent)}</strong></span>
+              <span>الميزانية: <strong class="text-white">${formatEGP(limit)}</strong></span>
+            </div>
+            <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden">
+              <div class="${barColor} h-full transition-all duration-500" style="width:${pct}%"></div>
+            </div>
+            <div class="text-[11px] text-slate-400">المتبقي في الفئة: ${formatEGP(Math.max(limit - spent, 0))} (${rawPct}%)</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderGoals() {
+      const grid = document.getElementById('goals-grid');
+      grid.innerHTML = state.goals.map(g => {
+        const pct = Math.min(Math.round((g.current / g.target) * 100), 100);
+        const rem = Math.max(g.target - g.current, 0);
+        return `
+          <div class="glass-card p-6 rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-bold text-base">${g.title}</h4>
+                <span class="text-xs text-slate-400">التاريخ المستهدف: ${g.deadline}</span>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-sm">${pct}%</span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
+              <div class="bg-gradient-to-l from-emerald-400 to-teal-500 h-full transition-all duration-500" style="width:${pct}%"></div>
+            </div>
+            <div class="flex justify-between text-xs text-slate-400">
+              <span>المدخر حاليًا: <strong class="text-emerald-400">${formatEGP(g.current)}</strong></span>
+              <span>المطلوب: <strong class="text-white">${formatEGP(g.target)}</strong></span>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
+              <span class="text-xs text-slate-400">المتبقي للهدف: ${formatEGP(rem)}</span>
+              <button onclick="contributeToGoal(${g.id})" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 font-bold text-xs transition">
+                + إيداع مبلغ للهدف
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function contributeToGoal(id) {
+      const val = prompt('أدخل المبلغ المراد إضافته لهدف الادخار (ج.م):', '2000');
+      if (!val || isNaN(val) || Number(val) <= 0) return;
+      const g = state.goals.find(x => x.id === id);
+      if (g) {
+        g.current += Number(val);
+        saveState();
+        showToast(`تمت إضافة ${formatEGP(val)} إلى «${g.title}»`);
+      }
+    }
+
+    function renderBills() {
+      const grid = document.getElementById('bills-grid');
+      grid.innerHTML = state.bills.map(b => `
+        <div class="glass-card p-5 rounded-2xl flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-base">${b.title}</span>
+              <span class="text-[11px] px-2 py-0.5 rounded-full ${b.isPaid ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+                ${b.isPaid ? 'مدفوعة الفعل' : 'مستحقة قريبًا'}
+              </span>
+            </div>
+            <div class="text-xs text-slate-400 mt-1">${b.category} • موعد الاستحقاق: ${b.dueDate}</div>
+          </div>
+          <div class="text-left space-y-2">
+            <div class="font-black text-base text-amber-400">${formatEGP(b.amount)}</div>
+            ${!b.isPaid ? `<button onclick="payBillNow(${b.id})" class="px-3 py-1 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">سداد الآن</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function payBillNow(id) {
+      const b = state.bills.find(x => x.id === id);
+      if (!b || b.isPaid) return;
+      b.isPaid = true;
+      state.transactions.push({
+        id: Date.now(),
+        type: 'expense',
+        amount: b.amount,
+        category: b.category,
+        method: 'تحويل بنكي',
+        desc: `سداد التزام: ${b.title}`,
+        date: new Date().toISOString().slice(0, 10)
+      });
+      saveState();
+      showToast(`تم سداد «${b.title}» وخصمها من الرصيد النقدي الفعلي`);
+    }
+
+    function renderInsights(s) {
+      const box = document.getElementById('insights-cards');
+      box.innerHTML = `
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-t-4 border-t-emerald-500">
+          <div class="text-xs text-emerald-400 font-bold">نتيجة حسابية مؤكدة (100% ثقة)</div>
+          <h4 class="font-bold text-base">تحليل التدفق النقدي والالتزامات</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            إجمالي دخلك المسجل ${formatEGP(s.totalIncome)}، صُرف منه فعليًا ${formatEGP(s.totalExpenses)} (${Math.round((s.totalExpenses / s.totalIncome) * 100)}%). لديك التزامات غير مدفوعة بقيمة ${formatEGP(s.unpaidBills)}.
+          </p>
+          <div class="text-xs text-emerald-400 font-semibold">الاقتراح العملي: حافظ على سقف إنفاق يومي لا يتجاوز ${formatEGP(Math.round(s.safeDaily))} لتحقيق هدف ادخارك (${formatEGP(s.targetSavings)}).</div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl space-y-3 border-t-4 border-t-amber-500">
+          <div class="text-xs text-amber-400 font-bold">توقع تقديري (مستوى الثقة: 85%)</div>
+          <h4 class="font-bold text-base">توقع رصيد نهاية الشهر واكتشاف الفرص</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            بناءً على متوسط إنفاقك اليومي الحالي (${formatEGP(Math.round(s.dailyBurn))}/يوم)، من المتوقع أن يتبقى لديك ${formatEGP(Math.round(s.projectedEnd))} في نهاية الشهر بعد سداد الفواتير.
+          </p>
+          <div class="text-xs text-amber-400 font-semibold">فرصة توفير: تخفيض مصروفات «الطعام والشراب» بنسبة 15% يوفر لك ${formatEGP(Math.round((s.byCat['الطعام والشراب'] || 0) * 0.15))} إضافية هذا الشهر.</div>
+        </div>
+      `;
+    }
+
+    // ================= المساعد المالي الذكي (مصري + فصحى) =================
+    function renderChatMessages() {
+      const box = document.getElementById('chat-messages');
+      box.innerHTML = state.chatHistory.map(m => `
+        <div class="p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed max-w-[85%] ${
+          m.role === 'user'
+            ? 'bg-emerald-500 text-slate-950 font-bold mr-auto rounded-tl-none'
+            : 'bg-slate-200 dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 ml-auto rounded-tr-none border border-slate-300 dark:border-slate-700'
+        }">
+          ${escapeHTML(m.text).replace(/\n/g, '<br/>')}
+        </div>
+      `).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function sendQuickPrompt(text) {
+      document.getElementById('chat-input').value = text;
+      processUserChat(text);
+    }
+
+    function handleChatForm(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      processUserChat(text);
+    }
+
+    function processUserChat(msg) {
+      state.chatHistory.push({ role: 'user', text: msg });
+      const s = calculateFinancialSummary();
+
+      const norm = msg.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+      const thousandMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:ألف|الف|آلاف)/);
+      let amount = null;
+      if (thousandMatch) {
+        amount = parseFloat(thousandMatch[1]) * 1000;
+      } else {
+        const m = norm.match(/(\d+(?:\.\d+)?)/);
+        if (m) amount = parseFloat(m[1]);
+      }
+
+      // 1. سؤال القدرة على الشراء
+      if (norm.includes('أقدر أشتري') || norm.includes('اقدر اشتري') || norm.includes('ينفع أشتري')) {
+        const price = amount || 8000;
+        const safe = price <= s.disposable;
+        const reply = safe
+          ? `✅ نعم يا ${state.profile.name}، تقدر تشتريه بأمان! سعر المنتج (${formatEGP(price)}) أقل من رصيدك الحر المتاح للإنفاق (${formatEGP(s.disposable)}). بعد الشراء هيتبقى معاك ${formatEGP(s.disposable - price)} للإنفاق الحر من غير ما نلمس الفواتير القادمة (${formatEGP(s.unpaidBills)}) ولا هدف الادخار (${formatEGP(s.targetSavings)}).`
+          : `⚠️ نصيحة مديرك المالي: سعر المنتج (${formatEGP(price)}) أكبر من الصافي الحر الآمن (${formatEGP(s.disposable)}). لو اشتريته دلوقتي هتسحب ${formatEGP(price - s.disposable)} من مخصص الفواتير أو الادخار الشهري.`;
+        state.chatHistory.push({ role: 'assistant', text: reply });
+        saveState();
+        return;
+      }
+
+      // 2. استخراج معاملة مصروف أو دخل مع طلب التأكيد الإلزامي
+      const isExpense = ['صرفت', 'دفعت', 'اشتريت', 'جبت', 'حاسبت'].some(w => norm.includes(w));
+      const isIncome = ['قبضت', 'استلمت', 'مكافأة', 'حافز'].some(w => norm.includes(w));
+
+      if (isExpense || isIncome) {
+        if (!amount) {
+          state.chatHistory.push({
+            role: 'assistant',
+            text: 'فهمت إنك عايز تسجل معاملة جديدة، بس محتاج أعرف **المبلغ كام جنيه بالظبط؟** (مثلاً: صرفت 150 جنيه على الغداء).'
+          });
+          saveState();
+          return;
+        }
+        let cat = isIncome ? 'الراتب والدخل' : 'أخرى';
+        if (norm.includes('غداء') || norm.includes('عشاء') || norm.includes('فطار') || norm.includes('أكل') || norm.includes('قهوة')) cat = 'الطعام والشراب';
+        else if (norm.includes('مواصلات') || norm.includes('أوبر') || norm.includes('بنزين') || norm.includes('تاكسي')) cat = 'المواصلات';
+        else if (norm.includes('تيشيرت') || norm.includes('لبس') || norm.includes('حذاء') || norm.includes('هدوم')) cat = 'التسوق';
+        else if (norm.includes('إيجار') || norm.includes('ايجار')) cat = 'السكن';
+        else if (norm.includes('فاتورة') || norm.includes('كهرباء') || norm.includes('نت')) cat = 'الفواتير';
+
+        pendingChatTx = {
+          type: isIncome ? 'income' : 'expense',
+          amount,
+          category: cat,
+          method: 'نقدًا',
+          desc: msg,
+          date: new Date().toISOString().slice(0, 10)
+        };
+
+        document.getElementById('chat-proposed-details').innerHTML = `
+          <div>النوع: <strong>${isIncome ? 'دخل إضافي (+)' : 'مصروف (-)'}</strong></div>
+          <div>المبلغ: <strong class="text-emerald-400">${formatEGP(amount)}</strong></div>
+          <div>التصنيف الذكي: <strong>${cat}</strong></div>
+          <div>الوصف: <strong>${msg}</strong></div>
+        `;
+        document.getElementById('chat-confirmation-box').classList.remove('hidden');
+
+        state.chatHistory.push({
+          role: 'assistant',
+          text: `جهزت لك ملخص المعاملة (${formatEGP(amount)} — ${cat}). اضغط على **«تأكيد وحفظ في الحسابات»** بالأسفل لتسجيلها رسميًا.`
+        });
+        saveState();
+        return;
+      }
+
+      // 3. أسئلة تحليلية من قاعدة البيانات
+      let reply = '';
+      if (norm.includes('فاضل') || norm.includes('رصيد') || norm.includes('متبقي')) {
+        reply = `• الرصيد النقدي الفعلي: ${formatEGP(s.actualCash)}\n• فواتير قادمة غير مدفوعة: ${formatEGP(s.unpaidBills)}\n• الادخار الشهري المستهدف: ${formatEGP(s.targetSavings)}\n• الصافي الحر المتاح للإنفاق الآمن: ${formatEGP(s.disposable)} (بمعدل يومي آمن ${formatEGP(Math.round(s.safeDaily))}).`;
+      } else if (norm.includes('أكثر حاجة') || norm.includes('اكتر حاجه') || norm.includes('بتسحب')) {
+        reply = `أكثر فئة بتسحب من ميزانيتك الشهر ده هي «${s.topCategory}» بإجمالي ${formatEGP(s.byCat[s.topCategory] || 0)} من إجمالي مصروفاتك (${formatEGP(s.totalExpenses)}).`;
+      } else {
+        reply = `ملخص حساباتك اللحظي:\n- إجمالي الدخل: ${formatEGP(s.totalIncome)}\n- إجمالي المصروفات: ${formatEGP(s.totalExpenses)}\n- الصافي الحر للإنفاق: ${formatEGP(s.disposable)}\n- المصروف اليومي الآمن: ${formatEGP(Math.round(s.safeDaily))}/يوم.`;
+      }
+      state.chatHistory.push({ role: 'assistant', text: reply });
+      saveState();
+    }
+
+    function confirmChatTransaction() {
+      if (!pendingChatTx) return;
+      state.transactions.push({ id: Date.now(), ...pendingChatTx });
+      state.chatHistory.push({
+        role: 'assistant',
+        text: `✅ تم حفظ العملية (${formatEGP(pendingChatTx.amount)} - ${pendingChatTx.category}) وتحديث جميع أرصدتك.`
+      });
+      pendingChatTx = null;
+      document.getElementById('chat-confirmation-box').classList.add('hidden');
+      saveState();
+      showToast('تم تأكيد وحفظ المعاملة من الشات');
+    }
+
+    function cancelChatTransaction() {
+      pendingChatTx = null;
+      document.getElementById('chat-confirmation-box').classList.add('hidden');
+      showToast('تم إلغاء العملية');
+    }
+
+    function clearChat() {
+      state.chatHistory = [DEFAULT_STATE.chatHistory[0]];
+      saveState();
+    }
+
+    // ================= محاكي الشراء =================
+    function runPurchaseSimulator() {
+      const name = document.getElementById('sim-item-name').value || 'المنتج';
+      const price = Number(document.getElementById('sim-item-price').value || 0);
+      const s = calculateFinancialSummary();
+      const box = document.getElementById('sim-result-box');
+
+      if (price <= s.disposable) {
+        const after = s.disposable - price;
+        box.innerHTML = `
+          <div class="text-emerald-400 font-bold text-sm">✅ قرار شراء آمن تمامًا</div>
+          <p>شراء <strong>${name}</strong> بسعر ${formatEGP(price)} لن يمس هدف ادخارك (${formatEGP(s.targetSavings)}) ولا فواتيرك القادمة.</p>
+          <div>المتاح للإنفاق الحر بعد الشراء: <strong>${formatEGP(after)}</strong> (${formatEGP(Math.round(after / s.remainingDays))}/يوم).</div>
+        `;
+      } else if (price <= s.actualCash) {
+        box.innerHTML = `
+          <div class="text-amber-400 font-bold text-sm">⚠️ يربك خطة الادخار والفواتير</div>
+          <p>لديك سيولة نقدية كافية، لكن السعر يتجاوز رصيدك الحر الآمن بفارق <strong>${formatEGP(price - s.disposable)}</strong>.</p>
+        `;
+      } else {
+        box.innerHTML = `
+          <div class="text-rose-400 font-bold text-sm">❌ غير متاح حاليًا</div>
+          <p>سعر ${name} يتجاوز رصيدك النقدي الفعلي الحالي بفارق <strong>${formatEGP(price - s.actualCash)}</strong>.</p>
+        `;
+      }
+    }
+
+    // ================= النوافذ والإعدادات والتنقل =================
+    function enterApp() {
+      document.getElementById('landing-view').classList.add('hidden');
+      document.getElementById('app-view').classList.remove('hidden');
+      toggleSidebar(false);
+      refreshAllUI();
+      runPurchaseSimulator();
+    }
+
+    function showLanding() {
+      document.getElementById('app-view').classList.add('hidden');
+      document.getElementById('landing-view').classList.remove('hidden');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      toggleSidebar(false);
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = 'nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition whitespace-nowrap';
+      });
+      const activeBtn = document.getElementById(`nav-${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = 'nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition whitespace-nowrap bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20';
+      }
+      refreshAllUI();
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('smart_money_theme', isDark ? 'dark' : 'light');
+      showToast(isDark ? 'تم تفعيل المظهر الداكن' : 'تم تفعيل المظهر الفاتح');
+    }
+
+    function toggleSidebar(open) {
+      const sidebar = document.getElementById('app-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (!sidebar || !backdrop) return;
+      sidebar.classList.toggle('is-open', Boolean(open));
+      backdrop.classList.toggle('is-open', Boolean(open));
+    }
+
+    async function checkApiStatus() {
+      const status = document.getElementById('api-status');
+      if (!status) return;
+      try {
+        const response = await fetch(`${API_BASE}/health`, { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error('API unavailable');
+        status.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-emerald-400">الـ API متصل ويعمل — Smart Money API v1</span>';
+      } catch {
+        status.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400"></span><span class="text-amber-400">وضع العمل المحلي مفعل — البيانات محفوظة على جهازك</span>';
+      }
+    }
+
+    function openTxModal() {
+      document.getElementById('modal-tx-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('tx-modal').classList.remove('hidden');
+      document.getElementById('tx-modal').classList.add('flex');
+    }
+
+    function closeTxModal() {
+      document.getElementById('tx-modal').classList.add('hidden');
+      document.getElementById('tx-modal').classList.remove('flex');
+    }
+
+    function submitNewTransaction(e) {
+      e.preventDefault();
+      const type = document.getElementById('modal-tx-type').value;
+      const amount = parseFloat(document.getElementById('modal-tx-amount').value);
+      const category = document.getElementById('modal-tx-category').value;
+      const method = document.getElementById('modal-tx-method').value;
+      const desc = document.getElementById('modal-tx-desc').value.trim();
+      const date = document.getElementById('modal-tx-date').value;
+
+      state.transactions.push({ id: Date.now(), type, amount, category, method, desc, date });
+      closeTxModal();
+      e.target.reset();
+      saveState();
+      showToast('تم تسجيل المعاملة بنجاح');
+    }
+
+    function openOnboardingModal() {
+      enterApp();
+      switchTab('settings');
+      showToast('يمكنك تخصيص دخلك الشهري وهدف ادخارك من هنا');
+    }
+
+    function openGoalModal() {
+      const title = prompt('اسم هدف الادخار الجديد (مثال: شراء هاتف، سفر):');
+      if (!title) return;
+      const target = parseFloat(prompt('المبلغ المطلوب تحقيقه (ج.م):', '25000'));
+      if (!target || target <= 0) return;
+      state.goals.push({
+        id: Date.now(),
+        title,
+        target,
+        current: 0,
+        deadline: '2027-05-01'
+      });
+      saveState();
+      showToast('تم إنشاء هدف الادخار الجديد');
+    }
+
+    function addNewBillPrompt() {
+      const title = prompt('اسم الفاتورة أو الالتزام الشهري:');
+      if (!title) return;
+      const amount = parseFloat(prompt('المبلغ المستحق (ج.م):', '600'));
+      if (!amount || amount <= 0) return;
+      state.bills.push({
+        id: Date.now(),
+        title,
+        category: 'الفواتير',
+        amount,
+        dueDate: 'الشهر الحالي',
+        isPaid: false
+      });
+      saveState();
+      showToast('تمت إضافة الفاتورة وحجز قيمتها من الرصيد الحر');
+    }
+
+    function promptUpdateBudget() {
+      const cat = prompt('اكتب اسم الفئة لتعديل ميزانيتها (السكن، الطعام والشراب، المواصلات، الفواتير، التسوق، الترفيه):', 'الطعام والشراب');
+      if (!cat || !(cat in state.budgets)) return;
+      const val = parseFloat(prompt(`أدخل الحد الشهري الجديد لفئة «${cat}» بالجنيه المصري:`, state.budgets[cat]));
+      if (val > 0) {
+        state.budgets[cat] = val;
+        saveState();
+        showToast(`تم تحديث ميزانية ${cat}`);
+      }
+    }
+
+    function populateSettingsForm() {
+      document.getElementById('set-name').value = state.profile.name;
+      document.getElementById('set-income').value = state.profile.baseIncome;
+      document.getElementById('set-savings').value = state.profile.targetSavings;
+      document.getElementById('set-gemini-key').value = state.profile.geminiKey || '';
+    }
+
+    function saveSettings() {
+      state.profile.name = document.getElementById('set-name').value.trim() || 'مستخدم';
+      state.profile.baseIncome = parseFloat(document.getElementById('set-income').value) || 30000;
+      state.profile.targetSavings = parseFloat(document.getElementById('set-savings').value) || 8000;
+      state.profile.geminiKey = document.getElementById('set-gemini-key').value.trim();
+      saveState();
+      showToast('تم حفظ إعداداتك المالية وتحديث الحسابات');
+    }
+
+    function resetDemoData() {
+      if (!confirm('هل تريد استعادة البيانات الافتراضية؟')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = loadState();
+      saveState();
+      showToast('تمت استعادة البيانات الافتراضية');
+    }
+
+    function exportCSV() {
+      const headers = ['التاريخ,النوع,التصنيف,طريقة الدفع,المبلغ,الوصف'];
+      const rows = state.transactions.map(t => `${t.date},${t.type === 'income' ? 'دخل' : 'مصروف'},${t.category},${t.method},${t.amount},"${t.desc}"`);
+      const csvContent = '\uFEFF' + headers.concat(rows).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'smart-money-report.csv';
+      a.click();
+      showToast('تم تحميل تقرير CSV بنجاح');
+    }
+
+    // تشغيل الأيقونات عند تحميل الصفحة
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeTxModal();
+        toggleSidebar(false);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTheme();
+      lucide.createIcons();
+      runPurchaseSimulator();
+      checkApiStatus();
+    });
+  </script>
+</body>
+</html>
