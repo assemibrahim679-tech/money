@@ -87,6 +87,8 @@
     }
     @media (min-width: 1024px) { .mobile-sidebar-close, #mobile-menu-btn, #sidebar-backdrop { display: none; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+    .auth-shell { background: radial-gradient(circle at 15% 10%, rgba(16,185,129,.16), transparent 28rem), #020817; }
+    .auth-tab.is-active { background: #10b981; color: #020817; box-shadow: 0 10px 24px rgba(16,185,129,.22); }
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300 selection:bg-emerald-500 selection:text-white overflow-x-hidden">
@@ -94,8 +96,42 @@
   <!-- إشعار Toast عائم -->
   <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2"></div>
 
+  <!-- ================= تسجيل الدخول والحسابات الحقيقية ================= -->
+  <section id="auth-view" class="auth-shell min-h-screen flex items-center justify-center p-5">
+    <div class="w-full max-w-md animate-page">
+      <div class="text-center mb-8">
+        <div class="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-xl shadow-emerald-500/25">
+          <i data-lucide="wallet" class="w-7 h-7 text-white"></i>
+        </div>
+        <h1 class="text-3xl font-black mt-4">Smart Money <span class="text-emerald-400">AI</span></h1>
+        <p class="text-sm text-slate-400 mt-2">حسابك المالي الحقيقي — بياناتك معاك من أي جهاز</p>
+      </div>
+      <div class="glass-card rounded-3xl p-6 sm:p-8">
+        <div class="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-900/70 mb-6">
+          <button id="auth-login-tab" onclick="showAuthMode('login')" class="auth-tab is-active py-2.5 rounded-xl text-sm font-bold transition">تسجيل الدخول</button>
+          <button id="auth-register-tab" onclick="showAuthMode('register')" class="auth-tab py-2.5 rounded-xl text-sm font-bold text-slate-400 transition">حساب جديد</button>
+        </div>
+        <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-4">
+          <div>
+            <label class="text-xs text-slate-300 block mb-1.5">اليوزر العربي</label>
+            <input id="auth-username" required autocomplete="username" dir="rtl" placeholder="مثال: محمد أحمد" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-400" />
+            <p class="text-[11px] text-slate-500 mt-1">استخدم حروفًا عربية ومسافات فقط.</p>
+          </div>
+          <div>
+            <label class="text-xs text-slate-300 block mb-1.5">الباسورد</label>
+            <input id="auth-password" required type="password" autocomplete="current-password" dir="ltr" placeholder="حروف إنجليزية وأرقام فقط" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-left focus:outline-none focus:border-emerald-400" />
+            <p class="text-[11px] text-slate-500 mt-1" dir="rtl">8 أحرف أو أرقام إنجليزية على الأقل.</p>
+          </div>
+          <div id="auth-error" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs"></div>
+          <button id="auth-submit" type="submit" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black transition">دخول إلى حسابي</button>
+        </form>
+        <p class="text-[11px] text-slate-500 text-center mt-5">بياناتك محفوظة على السيرفر ومفصولة عن حسابات المستخدمين الآخرين.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= 1. الصفحة الترحيبية LANDING PAGE ================= -->
-  <div id="landing-view" class="min-h-screen flex flex-col justify-between relative overflow-hidden">
+  <div id="landing-view" class="hidden min-h-screen flex flex-col justify-between relative overflow-hidden">
     <!-- خلفية مضيئة -->
     <div class="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute top-1/2 -left-40 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -632,14 +668,14 @@
                 <label class="text-xs text-slate-400 block mb-1">الادخار الشهري المستهدف (ج.م)</label>
                 <input id="set-savings" type="number" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
               </div>
-              <div>
-                <label class="text-xs text-slate-400 block mb-1">مفتاح Gemini API (اختياري للاتصال السحابي المباشر)</label>
-                <input id="set-gemini-key" type="password" placeholder="AIzaSy..." class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
+              <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <div class="text-xs text-emerald-400 font-bold mb-1">المساعد الذكي متصل بالسيرفر</div>
+                <div class="text-[11px] text-slate-400 leading-relaxed">لا تحتاج لإدخال أي API key. مفاتيح الخدمة لا تصل إلى المتصفح وتظل محفوظة على السيرفر.</div>
               </div>
             </div>
             <div class="flex flex-wrap gap-3 pt-2">
               <button onclick="saveSettings()" class="px-6 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">حفظ التعديلات</button>
-              <button onclick="resetDemoData()" class="px-5 py-2.5 rounded-xl bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-bold text-sm">إعادة ضبط البيانات الافتراضية</button>
+              <button onclick="logoutUser()" class="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 font-bold text-sm">تسجيل الخروج</button>
             </div>
           </div>
         </section>
@@ -717,41 +753,12 @@
     const API_BASE = '/api';
 
     const DEFAULT_STATE = {
-      profile: {
-        name: 'عاصم إبراهيم',
-        baseIncome: 30000,
-        targetSavings: 8000,
-        geminiKey: ''
-      },
-      transactions: [
-        { id: 1, type: 'expense', amount: 6000, category: 'السكن', method: 'تحويل بنكي', desc: 'إيجار الشقة الشهري', date: new Date().toISOString().slice(0, 8) + '01' },
-        { id: 2, type: 'expense', amount: 2450, category: 'الطعام والشراب', method: 'بطاقة بنكية', desc: 'خضار ومشتريات السوبرماركت', date: new Date(Date.now() - 86400000 * 3).toISOString().slice(0, 10) },
-        { id: 3, type: 'expense', amount: 850, category: 'المواصلات', method: 'نقدًا', desc: 'تموين بنزين ومواصلات أوبر', date: new Date(Date.now() - 86400000 * 2).toISOString().slice(0, 10) },
-        { id: 4, type: 'expense', amount: 650, category: 'الفواتير', method: 'محفظة إلكترونية', desc: 'فاتورة الإنترنت المنزلي والموبايل', date: new Date(Date.now() - 86400000).toISOString().slice(0, 10) },
-        { id: 5, type: 'expense', amount: 350, category: 'الطعام والشراب', method: 'نقدًا', desc: 'غداء وقهوة اليوم', date: new Date().toISOString().slice(0, 10) }
-      ],
-      budgets: {
-        'السكن': 6500,
-        'الطعام والشراب': 4500,
-        'المواصلات': 2000,
-        'الفواتير': 1800,
-        'التسوق': 2500,
-        'الترفيه': 1500
-      },
-      bills: [
-        { id: 101, title: 'فاتورة الكهرباء الشهرية', category: 'الفواتير', amount: 950, dueDate: 'يوم 5 القادم', isPaid: false },
-        { id: 102, title: 'اشتراك الجيم والنادي', category: 'الاشتراكات', amount: 750, dueDate: 'يوم 10 القادم', isPaid: false }
-      ],
-      goals: [
-        { id: 201, title: 'صندوق الطوارئ الشخصي', target: 90000, current: 36000, deadline: '2027-06-01' },
-        { id: 202, title: 'شراء لابتوب MacBook Pro', target: 65000, current: 25000, deadline: '2027-03-15' }
-      ],
-      chatHistory: [
-        {
-          role: 'assistant',
-          text: 'أهلاً بك يا عاصم في Smart Money AI! أنا مديرك المالي الذكي. يمكنك تسجيل مصروفاتك بالعامية المصرية (مثل: «صرفت 150 جنيه على الغداء») أو سؤالي («فاضل معايا كام؟» أو «هل أقدر أشتري موبايل بـ 8000 جنيه؟»).'
-        }
-      ]
+      profile: { name: '', baseIncome: 0, targetSavings: 0, geminiKey: '' },
+      transactions: [],
+      budgets: {},
+      bills: [],
+      goals: [],
+      chatHistory: [{ role: 'assistant', text: 'أهلاً بك! أنا مساعدك المالي الذكي. اسألني عن أي حاجة تخص حسابك أو التطبيق.' }]
     };
 
     let state = loadState();
@@ -771,18 +778,10 @@
     }
 
     function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_STATE));
-      } catch {
-        return JSON.parse(JSON.stringify(DEFAULT_STATE));
-      }
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
     }
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      refreshAllUI();
-    }
+    function saveState() { return Promise.resolve(); }
 
     function formatEGP(num) {
       return Number(num || 0).toLocaleString('ar-EG', { maximumFractionDigits: 2 }) + ' ج.م';
@@ -1495,21 +1494,20 @@
       document.getElementById('set-name').value = state.profile.name;
       document.getElementById('set-income').value = state.profile.baseIncome;
       document.getElementById('set-savings').value = state.profile.targetSavings;
-      document.getElementById('set-gemini-key').value = state.profile.geminiKey || '';
+      state.profile.geminiKey = '';
     }
 
     function saveSettings() {
       state.profile.name = document.getElementById('set-name').value.trim() || 'مستخدم';
       state.profile.baseIncome = parseFloat(document.getElementById('set-income').value) || 30000;
       state.profile.targetSavings = parseFloat(document.getElementById('set-savings').value) || 8000;
-      state.profile.geminiKey = document.getElementById('set-gemini-key').value.trim();
+      state.profile.geminiKey = '';
       saveState();
       showToast('تم حفظ إعداداتك المالية وتحديث الحسابات');
     }
 
     function resetDemoData() {
       if (!confirm('هل تريد استعادة البيانات الافتراضية؟')) return;
-      localStorage.removeItem(STORAGE_KEY);
       state = loadState();
       saveState();
       showToast('تمت استعادة البيانات الافتراضية');
@@ -1528,6 +1526,114 @@
       showToast('تم تحميل تقرير CSV بنجاح');
     }
 
+    // ================= الحساب الحقيقي والمزامنة مع السيرفر =================
+    let authMode = 'login';
+    let authUser = null;
+
+    async function apiFetch(path, options = {}) {
+      const response = await fetch(`${API_BASE}${path}`, { credentials: 'include', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) throw new Error(payload.error || 'تعذر تنفيذ الطلب');
+      return payload;
+    }
+
+    function showAuthMode(mode) {
+      authMode = mode === 'register' ? 'register' : 'login';
+      document.getElementById('auth-login-tab').classList.toggle('is-active', authMode === 'login');
+      document.getElementById('auth-register-tab').classList.toggle('is-active', authMode === 'register');
+      document.getElementById('auth-submit').textContent = authMode === 'login' ? 'دخول إلى حسابي' : 'إنشاء حساب جديد';
+      document.getElementById('auth-password').autocomplete = authMode === 'login' ? 'current-password' : 'new-password';
+      document.getElementById('auth-error').classList.add('hidden');
+    }
+
+    async function submitAuth(event) {
+      event.preventDefault();
+      const button = document.getElementById('auth-submit');
+      const errorBox = document.getElementById('auth-error');
+      const username = document.getElementById('auth-username').value.trim();
+      const password = document.getElementById('auth-password').value;
+      button.disabled = true;
+      button.textContent = authMode === 'login' ? 'جاري تسجيل الدخول...' : 'جاري إنشاء الحساب...';
+      errorBox.classList.add('hidden');
+      try {
+        const result = await apiFetch(`/auth/${authMode}`, { method: 'POST', body: JSON.stringify({ username, password }) });
+        authUser = result.user;
+        await loadRemoteState();
+        document.getElementById('auth-view').classList.add('hidden');
+        document.getElementById('landing-view').classList.remove('hidden');
+        showToast(authMode === 'login' ? `أهلاً بعودتك يا ${authUser.username}` : 'تم إنشاء حسابك وحفظه على السيرفر');
+      } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.classList.remove('hidden');
+      } finally {
+        button.disabled = false;
+        button.textContent = authMode === 'login' ? 'دخول إلى حسابي' : 'إنشاء حساب جديد';
+      }
+    }
+
+    async function loadRemoteState() {
+      const payload = await apiFetch('/state');
+      authUser = payload.user;
+      state = payload.data;
+      refreshAllUI();
+    }
+
+    async function logoutUser() {
+      await apiFetch('/auth/logout', { method: 'POST', body: '{}' });
+      authUser = null;
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      document.getElementById('app-view').classList.add('hidden');
+      document.getElementById('landing-view').classList.add('hidden');
+      document.getElementById('auth-view').classList.remove('hidden');
+      showAuthMode('login');
+      showToast('تم تسجيل الخروج بأمان');
+    }
+
+    saveState = async function persistState() {
+      if (!authUser) return;
+      try {
+        await apiFetch('/state', { method: 'PUT', body: JSON.stringify(state) });
+        refreshAllUI();
+      } catch (error) { showToast(error.message); }
+    };
+
+    processUserChat = async function realAssistantChat(message) {
+      if (!authUser) return;
+      const text = String(message || '').trim();
+      if (!text) return;
+      state.chatHistory.push({ role: 'user', text });
+      renderChatMessages();
+      const box = document.getElementById('chat-messages');
+      const thinking = document.createElement('div');
+      thinking.className = 'ml-auto max-w-[85%] p-3.5 rounded-2xl rounded-tr-none bg-slate-200 dark:bg-slate-800/90 text-xs text-slate-400 animate-pulse';
+      thinking.textContent = 'المساعد بيفكر في بيانات حسابك...';
+      box.appendChild(thinking);
+      try {
+        const result = await apiFetch('/assistant/chat', { method: 'POST', body: JSON.stringify({ message: text }) });
+        thinking.remove();
+        state.chatHistory.push({ role: 'assistant', text: result.reply });
+        renderChatMessages();
+      } catch (error) {
+        thinking.remove();
+        state.chatHistory.push({ role: 'assistant', text: `حصلت مشكلة مؤقتة: ${error.message}` });
+        renderChatMessages();
+      }
+    };
+
+    async function bootAuth() {
+      try {
+        const result = await apiFetch('/auth/me');
+        if (result.user) {
+          authUser = result.user;
+          await loadRemoteState();
+          document.getElementById('auth-view').classList.add('hidden');
+          document.getElementById('landing-view').classList.remove('hidden');
+        }
+      } catch {
+        document.getElementById('auth-view').classList.remove('hidden');
+      }
+    }
+
     // تشغيل الأيقونات عند تحميل الصفحة
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
@@ -1539,8 +1645,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadTheme();
       lucide.createIcons();
-      runPurchaseSimulator();
-      checkApiStatus();
+      bootAuth();
     });
   </script>
 </body>
