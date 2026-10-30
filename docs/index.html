@@ -375,9 +375,18 @@
           <!-- الرسوم البيانية -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-7 glass-card p-6 rounded-2xl">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-base">المصروفات حسب الفئات (ج.م)</h3>
-                <span id="top-category-badge" class="text-xs px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 font-bold">الأعلى: السكن</span>
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 class="font-bold text-base">المصروفات حسب الفئات (ج.م)</h3>
+                  <p id="chart-interaction-hint" class="text-[11px] text-slate-400 mt-1">اضغط على أي فئة لعرض معاملاتها</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <select id="chart-mode" onchange="setChartMode(this.value)" class="text-[11px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-2 py-1.5">
+                    <option value="bar">أعمدة</option>
+                    <option value="line">خطّي</option>
+                  </select>
+                  <span id="top-category-badge" class="text-xs px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 font-bold">الأعلى: السكن</span>
+                </div>
               </div>
               <div class="h-64">
                 <canvas id="categoryChart"></canvas>
@@ -386,7 +395,10 @@
 
             <div class="lg:col-span-5 glass-card p-6 rounded-2xl flex flex-col justify-between">
               <div>
-                <h3 class="font-bold text-base mb-4">توزيع السيولة الشهرية</h3>
+                <div class="flex items-center justify-between gap-2 mb-4">
+                  <h3 class="font-bold text-base">توزيع السيولة الشهرية</h3>
+                  <button onclick="resetChartFocus()" class="text-[11px] text-emerald-400 hover:underline">إلغاء التصفية</button>
+                </div>
                 <div class="h-56">
                   <canvas id="cashflowChart"></canvas>
                 </div>
@@ -746,6 +758,8 @@
     let pendingChatTx = null;
     let catChartInstance = null;
     let flowChartInstance = null;
+    let chartMode = 'bar';
+    let chartFocus = null;
 
     function escapeHTML(value) {
       return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
@@ -925,24 +939,45 @@
       const ctx2 = document.getElementById('cashflowChart');
       if (!ctx1 || !ctx2) return;
 
-      const labels = s.sortedCats.map(i => i[0]);
-      const values = s.sortedCats.map(i => i[1]);
+      const chartCats = chartFocus
+        ? [[chartFocus, s.byCat[chartFocus] || 0]]
+        : s.sortedCats;
+      const labels = chartCats.map(i => i[0]);
+      const values = chartCats.map(i => i[1]);
+      const modeSelect = document.getElementById('chart-mode');
+      if (modeSelect) modeSelect.value = chartMode;
 
       if (catChartInstance) catChartInstance.destroy();
       catChartInstance = new Chart(ctx1, {
-        type: 'bar',
+        type: chartMode,
         data: {
           labels,
           datasets: [{
             label: 'المصروفات (ج.م)',
             data: values,
             backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'],
-            borderRadius: 10
+            borderColor: '#34d399',
+            borderWidth: chartMode === 'line' ? 3 : 0,
+            borderRadius: chartMode === 'bar' ? 10 : 0,
+            fill: chartMode === 'line',
+            tension: 0.35,
+            pointRadius: chartMode === 'line' ? 5 : 0,
+            pointHoverRadius: 8
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          onClick: (_event, elements) => {
+            if (!elements.length || !labels[elements[0].index]) return;
+            chartFocus = labels[elements[0].index];
+            const search = document.getElementById('tx-search');
+            if (search) search.value = chartFocus;
+            document.getElementById('chart-interaction-hint').textContent = `تم اختيار «${chartFocus}» — اضغط إلغاء التصفية للعودة`;
+            showToast(`تم تصفية المعاملات على فئة ${chartFocus}`);
+            switchTab('transactions');
+          },
           plugins: { legend: { display: false } },
           scales: {
             y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
@@ -970,6 +1005,21 @@
           }
         }
       });
+    }
+
+    function setChartMode(mode) {
+      chartMode = mode === 'line' ? 'line' : 'bar';
+      renderCharts(calculateFinancialSummary());
+    }
+
+    function resetChartFocus() {
+      chartFocus = null;
+      const search = document.getElementById('tx-search');
+      if (search) search.value = '';
+      const hint = document.getElementById('chart-interaction-hint');
+      if (hint) hint.textContent = 'اضغط على أي فئة لعرض معاملاتها';
+      renderCharts(calculateFinancialSummary());
+      showToast('تم إلغاء تصفية الرسم البياني');
     }
 
     function renderTransactionsTable() {
