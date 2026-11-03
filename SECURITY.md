@@ -23,3 +23,5 @@
 7. Complete a privacy policy, retention/deletion/export process, and an independent security review.
 
 The current repository contains the hardened application layer, but these infrastructure and verification items are still required before public launch at scale.
+
+SMS env vars required: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID

@@ -113,17 +113,17 @@
         </div>
         <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-4">
           <div>
-            <label class="text-xs text-slate-300 block mb-1.5">اليوزر العربي</label>
-            <input id="auth-username" required autocomplete="username" dir="rtl" placeholder="مثال: محمد أحمد" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-400" />
-            <p class="text-[11px] text-slate-500 mt-1">استخدم حروفًا عربية ومسافات فقط.</p>
+            <label class="text-xs text-slate-300 block mb-1.5">رقم الموبايل</label>
+            <input id="auth-phone" required autocomplete="tel" dir="ltr" inputmode="tel" placeholder="مثال: +201001234567" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-left focus:outline-none focus:border-emerald-400" />
+            <p class="text-[11px] text-slate-500 mt-1" dir="rtl">اكتب الرقم بصيغة دولية، وسنرسل لك كود SMS.</p>
           </div>
-          <div>
-            <label class="text-xs text-slate-300 block mb-1.5">الباسورد</label>
-            <input id="auth-password" required type="password" autocomplete="current-password" dir="ltr" placeholder="حروف إنجليزية وأرقام فقط" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-left focus:outline-none focus:border-emerald-400" />
-            <p class="text-[11px] text-slate-500 mt-1" dir="rtl">8 أحرف أو أرقام إنجليزية على الأقل.</p>
+          <div id="auth-code-wrap" class="hidden">
+            <label class="text-xs text-slate-300 block mb-1.5">كود التحقق SMS</label>
+            <input id="auth-code" autocomplete="one-time-code" inputmode="numeric" dir="ltr" maxlength="10" placeholder="اكتب الكود الذي وصلك" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-left tracking-[0.35em] focus:outline-none focus:border-emerald-400" />
+            <button type="button" onclick="sendOtpAgain()" class="text-[11px] text-emerald-400 hover:text-emerald-300 mt-2">إرسال الكود مرة أخرى</button>
           </div>
           <div id="auth-error" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs"></div>
-          <button id="auth-submit" type="submit" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black transition">دخول إلى حسابي</button>
+          <button id="auth-submit" type="submit" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black transition">إرسال كود الدخول</button>
         </form>
         <p class="text-[11px] text-slate-500 text-center mt-5">بياناتك محفوظة على السيرفر ومفصولة عن حسابات المستخدمين الآخرين.</p>
       </div>
@@ -1529,6 +1529,7 @@
     // ================= الحساب الحقيقي والمزامنة مع السيرفر =================
     let authMode = 'login';
     let authUser = null;
+    let otpStep = false;
 
     function readCookie(name) {
       const item = document.cookie.split('; ').find(row => row.startsWith(`${name}=`));
@@ -1547,35 +1548,52 @@
 
     function showAuthMode(mode) {
       authMode = mode === 'register' ? 'register' : 'login';
+      otpStep = false;
       document.getElementById('auth-login-tab').classList.toggle('is-active', authMode === 'login');
       document.getElementById('auth-register-tab').classList.toggle('is-active', authMode === 'register');
-      document.getElementById('auth-submit').textContent = authMode === 'login' ? 'دخول إلى حسابي' : 'إنشاء حساب جديد';
-      document.getElementById('auth-password').autocomplete = authMode === 'login' ? 'current-password' : 'new-password';
+      document.getElementById('auth-submit').textContent = 'إرسال كود التحقق';
+      document.getElementById('auth-code-wrap').classList.add('hidden');
+      document.getElementById('auth-code').value = '';
       document.getElementById('auth-error').classList.add('hidden');
+    }
+
+    async function sendOtpAgain() {
+      otpStep = false;
+      await submitAuth({ preventDefault() {} });
     }
 
     async function submitAuth(event) {
       event.preventDefault();
       const button = document.getElementById('auth-submit');
       const errorBox = document.getElementById('auth-error');
-      const username = document.getElementById('auth-username').value.trim();
-      const password = document.getElementById('auth-password').value;
+      const phone = document.getElementById('auth-phone').value.trim();
+      const code = document.getElementById('auth-code').value.trim();
       button.disabled = true;
-      button.textContent = authMode === 'login' ? 'جاري تسجيل الدخول...' : 'جاري إنشاء الحساب...';
+      button.textContent = otpStep ? 'جاري التحقق...' : 'جاري إرسال الكود...';
       errorBox.classList.add('hidden');
       try {
-        const result = await apiFetch(`/auth/${authMode}`, { method: 'POST', body: JSON.stringify({ username, password }) });
+        if (!otpStep) {
+          await apiFetch('/auth/otp/send', { method: 'POST', body: JSON.stringify({ phone, mode: authMode }) });
+          otpStep = true;
+          document.getElementById('auth-code-wrap').classList.remove('hidden');
+          document.getElementById('auth-code').focus();
+          button.textContent = 'تأكيد الكود والدخول';
+          showToast('تم إرسال كود التحقق على موبايلك');
+          return;
+        }
+        const result = await apiFetch('/auth/otp/verify', { method: 'POST', body: JSON.stringify({ phone, code, mode: authMode }) });
         authUser = result.user;
         await loadRemoteState();
         document.getElementById('auth-view').classList.add('hidden');
         document.getElementById('landing-view').classList.remove('hidden');
-        showToast(authMode === 'login' ? `أهلاً بعودتك يا ${authUser.username}` : 'تم إنشاء حسابك وحفظه على السيرفر');
+        showToast(authMode === 'login' ? 'أهلاً بعودتك، تم فتح حسابك' : 'تم إنشاء حسابك وحفظه على السيرفر');
       } catch (error) {
         errorBox.textContent = error.message;
         errorBox.classList.remove('hidden');
       } finally {
         button.disabled = false;
-        button.textContent = authMode === 'login' ? 'دخول إلى حسابي' : 'إنشاء حساب جديد';
+        if (!otpStep) button.textContent = 'إرسال كود التحقق';
+        else button.textContent = 'تأكيد الكود والدخول';
       }
     }
 

@@ -38,6 +38,7 @@ app.use((req, res, next) => { if (req.path.startsWith('/api/')) { res.setHeader(
 const apiLimiter = rateLimit({ windowMs: 60_000, limit: 240, standardHeaders: 'draft-7', legacyHeaders: false, message: { ok: false, error: 'طلبات كثيرة جدًا، حاول بعد دقيقة' } });
 const authLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false, message: { ok: false, error: 'محاولات دخول كثيرة، حاول بعد 15 دقيقة' } });
 const assistantLimiter = rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: 'draft-7', legacyHeaders: false, message: { ok: false, error: 'استخدم المساعد بهدوء وحاول بعد دقيقة' } });
+const otpLimiter = rateLimit({ windowMs: 10 * 60_000, limit: 8, standardHeaders: 'draft-7', legacyHeaders: false, message: { ok: false, error: 'محاولات كود كثيرة، حاول بعد 10 دقائق' } });
 app.use('/api', apiLimiter);
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -74,6 +75,26 @@ async function verifyPassword(password, stored) {
 }
 function validUsername(username) { return typeof username === 'string' && /^[\u0600-\u06FF\u0750-\u077F\s]{2,40}$/.test(username.trim()); }
 function validPassword(password) { return typeof password === 'string' && /^[A-Za-z0-9]{8,72}$/.test(password); }
+function normalizePhone(value) {
+  let phone = String(value || '').trim().replace(/[\s().-]/g, '');
+  if (phone.startsWith('00')) phone = `+${phone.slice(2)}`;
+  if (phone.startsWith('01') && phone.length === 11) phone = `+20${phone.slice(1)}`;
+  if (/^20\d{10}$/.test(phone)) phone = `+${phone}`;
+  return /^\+[1-9]\d{7,14}$/.test(phone) ? phone : '';
+}
+async function twilioVerify(pathname, params) {
+  const { TWILIO_ACCOUNT_SID: sid, TWILIO_AUTH_TOKEN: token, TWILIO_VERIFY_SERVICE_SID: service } = process.env;
+  if (!sid || !token || !service) throw Object.assign(new Error('SMS provider is not configured'), { statusCode: 503 });
+  const response = await fetch(`https://verify.twilio.com/v2/Services/${encodeURIComponent(service)}${pathname}`, {
+    method: 'POST',
+    signal: AbortSignal.timeout(15_000),
+    headers: { Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(params)
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw Object.assign(new Error(payload.message || 'تعذر إرسال كود التحقق'), { statusCode: response.status >= 500 ? 502 : 400 });
+  return payload;
+}
 function publicHttps(req) {
   return req.headers['x-forwarded-proto'] === 'https' || req.headers['x-forwarded-ssl'] === 'on';
 }
@@ -88,9 +109,14 @@ async function initDb() {
   await pool.query(`CREATE TABLE IF NOT EXISTS money_users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(80) NOT NULL UNIQUE,
-    password_hash VARCHAR(180) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    phone VARCHAR(24) NULL,
+    password_hash VARCHAR(180) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_money_users_phone (phone)
   ) ENGINE=InnoDB`);
+  try { await pool.query('ALTER TABLE money_users ADD COLUMN phone VARCHAR(24) NULL'); } catch (error) { if (error.code !== 'ER_DUP_FIELDNAME') throw error; }
+  try { await pool.query('ALTER TABLE money_users ADD UNIQUE KEY uq_money_users_phone (phone)'); } catch (error) { if (!['ER_DUP_KEYNAME', 'ER_DUP_INDEX'].includes(error.code)) throw error; }
+  try { await pool.query('ALTER TABLE money_users MODIFY password_hash VARCHAR(180) NULL'); } catch (error) { if (error.code !== 'ER_NO_SUCH_TABLE') throw error; }
   await pool.query(`CREATE TABLE IF NOT EXISTS money_sessions (
     token_hash CHAR(64) PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
@@ -145,27 +171,37 @@ app.get('/api/health', async (_req, res) => {
   try { await pool.query('SELECT 1'); res.json({ ok: true, service: 'money-api', database: 'connected' }); } catch { res.status(503).json({ ok: false, service: 'money-api', database: 'unavailable' }); }
 });
 app.get('/api/auth/csrf', (req, res) => res.json({ ok: true, token: req.csrfToken }));
-app.post('/api/auth/register', authLimiter, async (req, res, next) => {
+app.post('/api/auth/otp/send', otpLimiter, async (req, res, next) => {
   try {
-    const username = String(req.body?.username || '').trim();
-    const password = String(req.body?.password || '');
-    if (!validUsername(username)) return res.status(400).json({ ok: false, error: 'اكتب يوزر عربي من حرفين إلى 40 حرفًا' });
-    if (!validPassword(password)) return res.status(400).json({ ok: false, error: 'الباسورد يجب أن يكون 8 أحرف أو أرقام إنجليزية على الأقل' });
-    const passwordHash = await hashPassword(password);
-    const [result] = await pool.query('INSERT INTO money_users(username,password_hash) VALUES(?,?)', [username, passwordHash]);
-    await saveState(result.insertId, { ...structuredClone(DEFAULT_STATE), profile: { ...DEFAULT_STATE.profile, name: username } });
-    await createSession(result.insertId, req, res);
-    res.status(201).json({ ok: true, user: { id: result.insertId, username } });
-  } catch (error) { if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ ok: false, error: 'اليوزر ده مستخدم بالفعل' }); next(error); }
+    const phone = normalizePhone(req.body?.phone);
+    const mode = req.body?.mode === 'register' ? 'register' : 'login';
+    if (!phone) return res.status(400).json({ ok: false, error: 'اكتب رقم موبايل صحيح بصيغة دولية، مثل +201001234567' });
+    const [rows] = await pool.query('SELECT id FROM money_users WHERE phone=?', [phone]);
+    if (mode === 'register' && rows[0]) return res.status(409).json({ ok: false, error: 'الرقم ده عليه حساب بالفعل، اختار تسجيل الدخول' });
+    if (mode === 'login' && !rows[0]) return res.status(404).json({ ok: false, error: 'الرقم ده مش مسجل، اختار حساب جديد' });
+    await twilioVerify('/Verifications', { To: phone, Channel: 'sms' });
+    res.json({ ok: true, phone, mode, message: 'تم إرسال كود التحقق على الموبايل' });
+  } catch (error) { next(error); }
 });
-app.post('/api/auth/login', authLimiter, async (req, res, next) => {
+app.post('/api/auth/otp/verify', otpLimiter, async (req, res, next) => {
   try {
-    const username = String(req.body?.username || '').trim();
-    const password = String(req.body?.password || '');
-    const [rows] = await pool.query('SELECT id,username,password_hash FROM money_users WHERE username=?', [username]);
-    if (!rows[0] || !(await verifyPassword(password, rows[0].password_hash))) return res.status(401).json({ ok: false, error: 'اليوزر أو الباسورد غير صحيح' });
-    await createSession(rows[0].id, req, res);
-    res.json({ ok: true, user: { id: rows[0].id, username: rows[0].username } });
+    const phone = normalizePhone(req.body?.phone);
+    const code = String(req.body?.code || '').trim();
+    const mode = req.body?.mode === 'register' ? 'register' : 'login';
+    if (!phone || !/^\d{4,10}$/.test(code)) return res.status(400).json({ ok: false, error: 'اكتب كود التحقق المرسل على الموبايل' });
+    const verification = await twilioVerify('/VerificationCheck', { To: phone, Code: code });
+    if (verification.status !== 'approved') return res.status(401).json({ ok: false, error: 'كود التحقق غير صحيح أو انتهت صلاحيته' });
+    const [rows] = await pool.query('SELECT id,username,phone FROM money_users WHERE phone=?', [phone]);
+    let user = rows[0];
+    if (mode === 'register') {
+      if (user) return res.status(409).json({ ok: false, error: 'الرقم ده عليه حساب بالفعل، اختار تسجيل الدخول' });
+      const [result] = await pool.query('INSERT INTO money_users(username,phone,password_hash) VALUES(?,?,NULL)', [phone, phone]);
+      user = { id: result.insertId, username: phone, phone };
+      await saveState(user.id, { ...structuredClone(DEFAULT_STATE), profile: { ...DEFAULT_STATE.profile, name: phone } });
+    }
+    if (!user) return res.status(404).json({ ok: false, error: 'الرقم ده مش مسجل، اختار حساب جديد' });
+    await createSession(user.id, req, res);
+    res.json({ ok: true, user: { id: user.id, username: user.username, phone: user.phone || phone } });
   } catch (error) { next(error); }
 });
 app.post('/api/auth/logout', async (req, res, next) => { try { const raw = parseCookies(req.headers.cookie || '')[cookieName]; if (raw) await pool.query('DELETE FROM money_sessions WHERE token_hash=?', [crypto.createHash('sha256').update(raw).digest('hex')]); res.setHeader('Set-Cookie', clearSessionCookie(req)); res.json({ ok: true }); } catch (error) { next(error); } });
@@ -196,7 +232,11 @@ app.post('/api/assistant/chat', assistantLimiter, requireUser, async (req, res, 
 });
 
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.use((error, _req, res, _next) => { console.error('[money-api]', error?.code || error?.name || 'error'); res.status(error.statusCode || 500).json({ ok: false, error: error.statusCode === 413 ? 'البيانات أكبر من الحد المسموح' : 'حدث خطأ داخلي' }); });
+app.use((error, _req, res, _next) => {
+  console.error('[money-api]', error?.code || error?.name || 'error');
+  const message = error.statusCode === 413 ? 'البيانات أكبر من الحد المسموح' : error.statusCode === 503 ? 'خدمة رسائل SMS غير مهيأة على السيرفر بعد' : 'حدث خطأ داخلي';
+  res.status(error.statusCode || 500).json({ ok: false, error: message });
+});
 
 initDb().then(() => {
   setInterval(() => pool.query('DELETE FROM money_sessions WHERE expires_at <= NOW()').catch(() => {}), 60 * 60 * 1000).unref();
